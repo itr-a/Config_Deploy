@@ -1,0 +1,88 @@
+; Tera Term Macro (TTL) for Line-by-Line Configuration Deployment
+; This macro ensures configuration is sent reliably by pausing between each line.
+
+; 1. Define Variables
+:start
+  filename = '' ; Stores the name of the config file
+  filehandle = 0 ; File handle
+  line = '' ; Stores the current line read from the file
+  result = 0 ; Result of file operations
+
+; 2. Get Configuration File Name from User
+  inputbox 'Enter the name of the configuration file (e.g., my_config.txt):' 'Config Deploy' filename
+  if filename = '' goto end_macro ; Exit if cancelled
+
+; 3. Open the file
+  fileopen filehandle filename 0 ; Open file for reading (mode 0)
+  if filehandle < 0 then
+    messagebox 'Error: Could not open file "' filename '". Aborting.' 'File Error'
+    goto end_macro
+  endif
+
+; 4. Device Preparation (Assumes you are at the User EXEC Prompt (>) or Privileged EXEC Prompt (#))
+  
+  ; Ensure we are in privileged mode
+  sendln 'enable'
+  wait 'Password:' ; Wait for potential enable password prompt
+  if result = 1 then
+    ; If 'Password:' is detected, prompt the user for the enable password
+    inputbox 'Enter ENABLE Password:' 'Enable Password' password
+    sendln password
+  endif
+  
+  ; Wait for the privileged EXEC prompt (#)
+  wait '#', '>', 'Timed out.' ; Wait for either prompt, or timeout
+  
+  ; Enter Global Configuration Mode
+  sendln 'conf t'
+  wait '(config)#' ; Wait for config prompt
+  
+  if result = 0 then
+    messagebox 'Error: Timed out waiting for privileged prompt or config prompt. Aborting.' 'Connection Error'
+    fileclose filehandle
+    goto end_macro
+  endif
+
+; 5. Main Configuration Loop (The core logic)
+  messagebox 'Starting line-by-line configuration deployment. Do not touch the console.' 'Deployment'
+  
+:read_next_line
+  ; Read one line from the file
+  filereadln filehandle line
+  result = result
+  
+  ; Check for End of File (EOF)
+  if result < 0 goto deployment_complete
+
+  ; Check if the line is not empty (e.g., skips blank lines)
+  if strlen(line) > 0 then
+    ; Send the line and press Enter
+    sendln line
+    
+    ; *** CRITICAL DELAY ***
+    ; Pause for 100 milliseconds to prevent device buffer overflow
+    pause 100
+  endif
+  
+  goto read_next_line
+
+; 6. Cleanup and Save
+:deployment_complete
+  messagebox 'Configuration commands deployed successfully. Completing device configuration.' 'Deployment Complete'
+  
+  ; Exit Configuration Mode
+  sendln 'end'
+  wait '#'
+  
+  ; Save the configuration (Use 'write memory' for older Cisco devices, 'copy run start' for newer)
+  sendln 'write memory'
+  wait '#'
+
+  ; Close the file handle
+  fileclose filehandle
+
+  messagebox 'Macro complete. Configuration saved.' 'Success'
+
+:end_macro
+  ; End of macro
+  end
