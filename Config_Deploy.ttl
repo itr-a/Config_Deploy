@@ -68,7 +68,8 @@ strconcat Log_file '.log'
     pause 100
   endif
 
-   ; Check if the command was successfully deployed (if not, save the command to Invalid_)
+   ; Check if the command was successfully deployed (if not, save the command to Invalid_command_file)
+   if 
   
   goto read_next_line
 
