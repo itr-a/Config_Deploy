@@ -27,7 +27,7 @@ endif
 
 ; Create folder to save log and invalid command
 getdir C_dir
-getdate Log_date '%Y%m%d'
+getdate Log_date '_%Y%m%d-%H%M%S'
 Log_folder = C_dir
 strconcat Log_folder '\'
 strconcat Log_folder Log_date
