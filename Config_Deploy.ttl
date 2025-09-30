@@ -2,53 +2,52 @@
 ; This macro ensures configuration is sent reliably by pausing between each line.
 ; You must be in configure terminal mode.
 
-; 1. Feed config file
- Config_file='file_name.txt'
+; 1. User input
+host_name = 'host_name' ; hostname of the equipment (used for log file name)
+Config_file = 'file_name.txt' ; configuration file name for the equipment
 
-:start
-  filename = '' ; Stores the name of the config file
-  filehandle = 0 ; File handle
-  line = '' ; Stores the current line read from the file
-  result = 0 ; Result of file operations
-
-; 2. Get Configuration File Name from User
-  inputbox 'Enter the name of the configuration file (e.g., my_config.txt):' 'Config Deploy' filename
-  if filename = '' goto end_macro ; Exit if cancelled
-
-; 3. Open the file
-  fileopen filehandle filename 0 ; Open file for reading (mode 0)
-  if filehandle < 0 then
-    messagebox 'Error: Could not open file "' filename '". Aborting.' 'File Error'
-    goto end_macro
+; 2. Establish connection
+for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port number is in the range
+  int2str COM_PORT_str COM_PORT_int
+  login_command = '/C='
+  strconcat login_command COM_PORT_str
+  strconcat login_command ' /BAUD=9600'
+  connect login_command
+  if result=2 then
+    break
   endif
+next
 
-; 4. Device Preparation (Assumes you are at the User EXEC Prompt (>) or Privileged EXEC Prompt (#))
-  
-  ; Ensure we are in privileged mode
-  sendln 'enable'
-  wait 'Password:' ; Wait for potential enable password prompt
-  if result = 1 then
-    ; If 'Password:' is detected, prompt the user for the enable password
-    inputbox 'Enter ENABLE Password:' 'Enable Password' password
-    sendln password
-  endif
-  
-  ; Wait for the privileged EXEC prompt (#)
-  wait '#', '>', 'Timed out.' ; Wait for either prompt, or timeout
-  
-  ; Enter Global Configuration Mode
-  sendln 'conf t'
-  wait '(config)#' ; Wait for config prompt
-  
-  if result = 0 then
-    messagebox 'Error: Timed out waiting for privileged prompt or config prompt. Aborting.' 'Connection Error'
-    fileclose filehandle
-    goto end_macro
-  endif
 
-; 5. Main Configuration Loop (The core logic)
-  messagebox 'Starting line-by-line configuration deployment. Do not touch the console.' 'Deployment'
-  
+if result=2 then
+else
+  closett
+  end
+endif
+
+; Create folder to save log and invalid command
+getdir C_dir
+getdate Log_date '%Y%m%d'
+Log_folder = C_dir
+strconcat Log_folder '\'
+strconcat Log_folder Log_date
+foldercreate Log_folder
+
+Invalid_command_file = Invalid_folder
+strconcat Invalid_file '\'
+getdate Invalid_date '_%Y%m%d-%H%M%S'
+strconcat Invalid_file host_name
+strconcat Invalid_file Log_date
+strconcat Invalid_file '.txt
+
+Log_file = Log_folder
+strconcat Log_file '\'
+getdate Log_date '_%Y%m%d-%H%M%S'
+strconcat Log_file host_name
+strconcat Log_file Log_date
+strconcat Log_file '.log'
+
+; 3. Main Configuration Loop (The core logic)
 :read_next_line
   ; Read one line from the file
   filereadln filehandle line
@@ -71,8 +70,6 @@
 
 ; 6. Cleanup and Save
 :deployment_complete
-  messagebox 'Configuration commands deployed successfully. Completing device configuration.' 'Deployment Complete'
-  
   ; Exit Configuration Mode
   sendln 'end'
   wait '#'
@@ -84,7 +81,6 @@
   ; Close the file handle
   fileclose filehandle
 
-  messagebox 'Macro complete. Configuration saved.' 'Success'
 
 :end_macro
   ; End of macro
