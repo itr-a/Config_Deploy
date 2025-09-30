@@ -1,7 +1,10 @@
 ; Tera Term Macro (TTL) for Line-by-Line Configuration Deployment
 ; This macro ensures configuration is sent reliably by pausing between each line.
+; You must be in configure terminal mode.
 
-; 1. Define Variables
+; 1. Feed config file
+ Config_file='file_name.txt'
+
 :start
   filename = '' ; Stores the name of the config file
   filehandle = 0 ; File handle
