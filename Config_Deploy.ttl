@@ -33,13 +33,15 @@ strconcat Log_folder '\'
 strconcat Log_folder Log_date
 foldercreate Log_folder
 
+; Invalid command file name setting
 Invalid_command_file = Invalid_folder
-strconcat Invalid_file '\'
+strconcat Invalid_command_file '\'
 getdate Invalid_date '_%Y%m%d-%H%M%S'
-strconcat Invalid_file host_name
-strconcat Invalid_file Log_date
-strconcat Invalid_file '.txt
+strconcat Invalid_command_file host_name
+strconcat Invalid_command_file Log_date
+strconcat Invalid_command_file '.txt
 
+; Log file name setting
 Log_file = Log_folder
 strconcat Log_file '\'
 getdate Log_date '_%Y%m%d-%H%M%S'
@@ -65,6 +67,8 @@ strconcat Log_file '.log'
     ; Pause for 100 milliseconds to prevent device buffer overflow
     pause 100
   endif
+
+   ; Check if the command was successfully deployed (if not, save the command to Invalid_)
   
   goto read_next_line
 
