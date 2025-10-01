@@ -6,7 +6,7 @@
 host_name = 'host_name' ; hostname of the equipment (used for log file name)
 Config_file = 'file_name.txt' ; configuration file name for the equipment
 
-; 2. Establish connection
+; 2. Establish connection (if failed, end and close program)
 for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port number is in the range
   int2str COM_PORT_str COM_PORT_int
   login_command = '/C='
@@ -17,7 +17,6 @@ for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port numb
     break
   endif
 next
-
 
 if result=2 then
 else
@@ -50,7 +49,7 @@ strconcat Log_file Log_date
 strconcat Log_file '.log'
 
 ; 3. Main Configuration Loop (The core logic)
-:read_next_line
+:deploy
   ; Read one line from the file
   filereadln filehandle line
   result = result
@@ -68,10 +67,17 @@ strconcat Log_file '.log'
     pause 100
   endif
 
-   ; Check if the command was successfully deployed (if not, save the command to Invalid_command_file)
-   if 
-  
-  goto read_next_line
+  ; Check if the command was successfully deployed (if not, save the command to Invalid_command_file)
+  wait '#' '%'
+  ; '#' = successfully deployed -> go to deploy
+　if result = 1 goto deploy
+  ; '%' = common symbol for 'valid command' -> log the command
+  if result = 2 goto invalid
+
+ 
+:valid
+ 
+
 
 ; 6. Cleanup and Save
 :deployment_complete
