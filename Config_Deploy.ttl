@@ -4,7 +4,7 @@
 
 ; <<<< EDIT HERE  >>>>
 host_name = 'host_name' ; hostname of the equipment (used for log file name)
-Config_file = 'file_name.txt' ; configuration file name for the equipment
+config_file = 'file_name.txt' ; configuration file name for the equipment
 
 
 
@@ -23,19 +23,14 @@ endif
 
 ; Create folder to save log and invalid command
 getdir C_dir
-getdate Log_date '_%Y%m%d-%H%M%S'
+getdate Log_date '_%Y%m%d'
+
 Log_folder = C_dir
 strconcat Log_folder '\'
 strconcat Log_folder Log_date
 foldercreate Log_folder
 
-; Invalid command file name setting
-Invalid_command_file = Invalid_folder
-strconcat Invalid_command_file '\'
-getdate Invalid_date '_%Y%m%d-%H%M%S'
-strconcat Invalid_command_file host_name
-strconcat Invalid_command_file Log_date
-strconcat Invalid_command_file '.txt
+getdate Log_date '_%Y%m%d_%H%M%S'
 
 ; Log file name setting
 Log_file = Log_folder
@@ -44,6 +39,13 @@ getdate Log_date '_%Y%m%d-%H%M%S'
 strconcat Log_file host_name
 strconcat Log_file Log_date
 strconcat Log_file '.log'
+
+; Invalid command file name setting
+invalid_folder = Log_folder
+strconcat invalid_file '\'
+getdate invalid_date '_%Y%m%d-%H%M%S'
+strconcat invalid_file Log_date
+strconcat invalid_file '_invalid.txt'
 
 
 
@@ -60,7 +62,7 @@ strconcat Log_file '.log'
   sendln line
   pause 100
 
-  wait '#' '>' '%'
+  wait '#' '%'
   if result = 1 
    goto deploy
   endif
@@ -72,20 +74,22 @@ strconcat Log_file '.log'
   endif
 
  endif
+ goto deploy
 
  
-; 6. Cleanup and Save
-:deployment_complete
+; Cleanup and Save
+:end
   ; Exit Configuration Mode
   sendln 'end'
   wait '#'
   
-  ; Save the configuration (Use 'write memory' for older Cisco devices, 'copy run start' for newer)
+  ; Save the configuration
   sendln 'write memory'
   wait '#'
 
   ; Close the file handle
-  fileclose filehandle
+  fileclose config_filehandle
+  fileclose invalid_filehandle
 
 
 :end_macro
