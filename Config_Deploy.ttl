@@ -66,13 +66,6 @@ strconcat Log_file '.log'
   endif
 
   if result = 2 
-   sendln 'enable'
-   wait '#'
-   sendln 'conf t'
-   wait '#' then goto deploy
-  endif
-
-  if result = 3 
    filewriteln invalid_filehandle line
    wait '#'
    goto deploy
