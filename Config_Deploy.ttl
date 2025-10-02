@@ -2,17 +2,14 @@
 ; This macro ensures configuration is sent reliably by pausing between each line.
 ; You must be in configure terminal mode.
 
-; 1. User input
+; <<<< EDIT HERE  >>>>
 host_name = 'host_name' ; hostname of the equipment (used for log file name)
 Config_file = 'file_name.txt' ; configuration file name for the equipment
 
+
+
 ; 2. Establish connection (if failed, end and close program)
 for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port number is in the range
-  int2str COM_PORT_str COM_PORT_int
-  login_command = '/C='
-  strconcat login_command COM_PORT_str
-  strconcat login_command ' /BAUD=9600'
-  connect login_command
   if result=2 then
     break
   endif
@@ -48,37 +45,42 @@ strconcat Log_file host_name
 strconcat Log_file Log_date
 strconcat Log_file '.log'
 
-; 3. Main Configuration Loop (The core logic)
-:deploy
-  ; Read one line from the file
-  filereadln filehandle line
-  result = result
-  
-  ; Check for End of File (EOF)
-  if result < 0 goto deployment_complete
 
-  ; Check if the line is not empty (e.g., skips blank lines)
-  if strlen(line) > 0 then
-    ; Send the line and press Enter
-    sendln line
-    
-    ; *** CRITICAL DELAY ***
-    ; Pause for 100 milliseconds to prevent device buffer overflow
-    pause 100
+
+; Main logic
+:deploy
+ ; Read config source file
+ filereadln config_filehandle line
+
+ ; If result was smaller than 0, end macro
+ if result < 0 goto end
+
+ ; If it's not the end of the config file
+ if strlen(line) > 0 then
+  sendln line
+  pause 100
+
+  wait '#' '>' '%'
+  if result = 1 
+   goto deploy
   endif
 
-  ; Check if the command was successfully deployed (if not, save the command to Invalid_command_file)
-  wait '#' '%'
-  ; '#' = successfully deployed -> go to deploy
-　if result = 1 goto deploy
-  ; '%' = common symbol for 'valid command' -> log the command
-  if result = 2 goto invalid
+  if result = 2 
+   sendln 'enable'
+   wait '#'
+   sendln 'conf t'
+   wait '#' then goto deploy
+  endif
+
+  if result = 3 
+   filewriteln invalid_filehandle line
+   wait '#'
+   goto deploy
+  endif
+
+ endif
 
  
-:valid
- 
-
-
 ; 6. Cleanup and Save
 :deployment_complete
   ; Exit Configuration Mode
