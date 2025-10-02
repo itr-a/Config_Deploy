@@ -6,7 +6,11 @@
 host_name = 'host_name' ; hostname of the equipment (used for log file name)
 config_file = 'file_name.txt' ; configuration file name for the equipment
 
+password = cisco
+enable_pass = cisco
 
+config_filehandle = 0
+invalid_filehandle = 0
 
 ; 2. Establish connection (if failed, end and close program)
 for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port number is in the range
@@ -47,6 +51,33 @@ getdate invalid_date '_%Y%m%d-%H%M%S'
 strconcat invalid_file Log_date
 strconcat invalid_file '_invalid.txt'
 
+fileopen config_filehandle config_file 0 1
+if config_filehandle < 0 then
+ sendln 'macro closed due to config file unopenable'
+ goto end_macro
+endif
+
+fileopen invalid_filehandle invalid_command 1
+if invalid_filehandle < 0 then
+ goto end_macro
+endif
+
+
+; log in
+wait 'Password:'
+sendln password
+wait '>'
+
+; start logging
+logopen
+
+sendln 'enable'
+wait 'password:'
+sendln enable_pass
+wait '#'
+sendln 'conf t'
+wait #
+goto deploy
 
 
 ; Main logic
