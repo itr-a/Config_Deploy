@@ -14,18 +14,17 @@ invalid_filehandle = 0
 
 ; 2. Establish connection (if failed, end and close program)
 for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port number is in the range
+  int2str COM_PORT_str COM_PORT_int
+  login_command = '/C='
+  strconcat login_command COM_PORT_str
+  strconcat login_command ' /BAUD=9600'
+  connect login_command
   if result=2 then
     break
   endif
 next
 
-if result=2 then
-else
-  closett
-  end
-endif
-
-; Create folder to save log and invalid command
+; Create folder to save files
 getdir C_dir
 getdate Log_date '_%Y%m%d'
 
@@ -51,7 +50,7 @@ getdate invalid_date '_%Y%m%d-%H%M%S'
 strconcat invalid_file Log_date
 strconcat invalid_file '_invalid.txt'
 
-fileopen config_filehandle config_file 0 1
+fileopen config_filehandle config_file 0 0
 if config_filehandle < 0 then
  sendln 'macro closed due to config file unopenable'
  goto end_macro
