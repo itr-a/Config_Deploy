@@ -6,8 +6,8 @@
 host_name = 'host_name' ; hostname of the equipment (used for log file name)
 config_file = 'file_name.txt' ; configuration file name for the equipment
 
-password = 'cisco'
-enable_pass = 'cisco'
+pass_word = 'cisco'
+enable_pass_word = 'cisco'
 
 config_filehandle = 0
 invalid_filehandle = 0
@@ -26,7 +26,7 @@ next
 
 ; Create folder to save files
 getdir C_dir
-getdate Log_date '_%Y%m%d'
+getdate Log_date '%Y%m%d'
 
 Log_folder = C_dir
 strconcat Log_folder '\'
