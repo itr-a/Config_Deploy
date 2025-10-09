@@ -15,7 +15,7 @@ invalid_filehandle = 0
 
 ; 2. Establish connection (if failed, end and close program)
 for COM_PORT_int 1 10 ; Try connecting Tera Term and check if your COM port number is in the range
-  int2str COM_PORT_str COM_PORT_int
+ int2str COM_PORT_str COM_PORT_int
   login_command = '/C='
   strconcat login_command COM_PORT_str
   strconcat login_command ' /BAUD=9600'
