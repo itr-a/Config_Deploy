@@ -63,13 +63,13 @@ endif
 
 
 ; log in
-wait 'Username:' '#' '>' '$'
+wait 'Username:' '#' '>' 
 if result = 1 then
   sendln user_name
 else
   sendln ''
 endif
-
+sendln''
 wait 'assword:'
 sendln pass_word
 wait '>'
@@ -78,7 +78,7 @@ wait '>'
 logopen Log_file 0 1
 
 sendln 'enable'
-wait 'assword:' '#' '>' '$'
+wait 'assword:' '#' 
 if result = 1 then
   sendln pass_word
 else
