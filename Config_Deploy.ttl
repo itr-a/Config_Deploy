@@ -45,7 +45,7 @@ strconcat Log_file '.log'
 ; Invalid command file name setting
 invalid_file = Log_folder
 strconcat invalid_file '\'
-strconcat Log_file host_name
+strconcat invalid_file host_name
 strconcat invalid_file Time_stamp
 strconcat invalid_file '_invalid.txt'
 
@@ -55,15 +55,17 @@ if config_filehandle < 0 then
  goto end_macro
 endif
 
-fileopen invalid_filehandle invalid_command 1
+fileopen invalid_filehandle invalid_file 1
 if invalid_filehandle < 0 then
  goto end_macro
 endif
 
 
 ; log in
+wait 'Username'
+
 wait 'assword:'
-sendln password
+sendln pass_word
 wait '>'
 
 ; start logging
@@ -71,7 +73,7 @@ logopen
 
 sendln 'enable'
 wait 'assword:'
-sendln enable_pass
+sendln enable_pass_word
 wait '#'
 sendln 'conf t'
 wait #
@@ -98,6 +100,8 @@ goto deploy
 
  if result = 2
   sendln 'en'
+  wait 'assword'
+  sendln enable_pass_word
   wait '#'
   sendln 'conf t'
   wait '(config)#'
@@ -124,6 +128,8 @@ goto deploy
   ; Save the configuration
   sendln 'write memory'
   wait '#'
+
+  logclose
 
   ; Close the file handle
   fileclose config_filehandle
